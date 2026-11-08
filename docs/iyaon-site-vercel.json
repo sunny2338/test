@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/admin", "destination": "https://iyaon-admin.vercel.app/admin" },
+    { "source": "/admin/:path*", "destination": "https://iyaon-admin.vercel.app/admin/:path*" }
+  ]
+}
