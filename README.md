@@ -22,19 +22,11 @@ npm run dev                  # http://localhost:3000/admin
 3. **데이터 영구 저장**: Storage → Upstash Redis(KV) 연결 → `KV_REST_API_URL`, `KV_REST_API_TOKEN`이 자동 설정됩니다.
    설정하지 않으면 메모리 저장소로 동작하며 재배포·콜드스타트 시 데이터가 초기화됩니다.
 
-## iyaon-site.vercel.app/admin 으로 접속하기
-1. 이 저장소를 Vercel에 **별도 프로젝트**로 배포 (예: 프로젝트 이름 `iyaon-admin` → `https://iyaon-admin.vercel.app`)
-2. 이 프로젝트 환경변수 추가 후 Redeploy
-   - `ADMIN_PASSWORD`, `SESSION_SECRET`
-   - `ASSET_PREFIX=https://iyaon-admin.vercel.app` (이 어드민 프로젝트의 실제 주소)
-   - `ALLOWED_ORIGINS=iyaon-site.vercel.app` (기본값과 같음, 커스텀 도메인이 있으면 쉼표로 추가)
-3. **iyaon-site 프로젝트** 루트의 `vercel.json`에 아래 rewrites 추가 후 배포 (`docs/iyaon-site-vercel.json` 참고)
-```json
-{
-  "rewrites": [
-    { "source": "/admin", "destination": "https://iyaon-admin.vercel.app/admin" },
-    { "source": "/admin/:path*", "destination": "https://iyaon-admin.vercel.app/admin/:path*" }
-  ]
-}
-```
-이미 `vercel.json`이 있으면 `rewrites` 배열에 두 줄만 추가하세요. 도메인이 다르면 `iyaon-admin.vercel.app` 부분을 실제 주소로 바꾸세요.
+## iyaon-site.vercel.app 에 배포 (사이트 + 어드민 한 프로젝트)
+이 저장소에 사이트(`public/index.html`, 민트 테마)와 어드민이 함께 들어 있습니다.
+- `/` → 사이트, `/admin` → 어드민
+
+1. Vercel → **iyaon-site** 프로젝트 → Settings → Git → 이 저장소(`sunny2338/test`) 연결
+2. Settings → Build & Deployment → Framework Preset: **Next.js**
+3. Environment Variables: `ADMIN_PASSWORD`, `SESSION_SECRET` (+ 선택: Upstash Redis 연결)
+4. 이 브랜치를 Production Branch로 지정하거나 `main`에 merge → 배포
