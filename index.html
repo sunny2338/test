@@ -1,0 +1,483 @@
+<title>민트 홈페이지</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 상단 도구 막대 + 한 단짜리 홈페이지(히어로+사진, 소개+사진, 서비스 카드, 연락처) */
+:root {
+  --mint: #3EB489;
+  --mint-deep: #23825F;
+  --mint-soft: #E6F6EF;
+  --bg: #F7FCFA;
+  --surface: #FFFFFF;
+  --fg: #16302A;
+  --muted: #557069;
+  --line: #CDE7DC;
+  --on-mint: #FFFFFF;
+  --font-display: "Gowun Dodum", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mint-soft: #133129; --bg: #0E1B18; --surface: #15261F; --fg: #E4F4EE;
+    --muted: #9BBDB2; --line: #24453A; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --mint-soft: #133129; --bg: #0E1B18; --surface: #15261F; --fg: #E4F4EE;
+  --muted: #9BBDB2; --line: #24453A; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.7;
+}
+.wrap {
+  max-width: 1000px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* 도구 막대 */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface);
+}
+.toolbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.toolbar .wrap {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding-block: 10px; font-size: 14px;
+}
+.toolbar .label { font-weight: 700; }
+.toolbar .spacer { margin-right: auto; color: var(--muted); }
+.swatches { display: flex; gap: 6px; align-items: center; }
+.swatch {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface);
+  outline: 1px solid var(--line); cursor: pointer; padding: 0;
+}
+.swatch[aria-pressed="true"] { outline: 2px solid var(--fg); }
+input[type="color"] { width: 32px; height: 30px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 2px; cursor: pointer; }
+.btn {
+  font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.btn.primary { background: var(--mint); border-color: var(--mint); color: var(--on-mint); font-weight: 700; }
+.btn:focus-visible, .swatch:focus-visible, .photo:focus-visible { outline: 2px solid var(--mint-deep); outline-offset: 2px; }
+.status { color: var(--muted); font-size: 13px; }
+.hint { background: var(--mint-soft); color: var(--fg); font-size: 14px; }
+.hint .wrap { padding-block: 8px; }
+
+/* 고칠 수 있는 글자: 마우스를 올리면 점선, 고치는 중이면 실선 */
+[data-edit] { border-radius: 4px; cursor: text; }
+[data-edit]:hover { outline: 1px dashed var(--mint); outline-offset: 3px; }
+[data-edit][contenteditable="true"] { outline: 2px solid var(--mint-deep); outline-offset: 3px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--fg); }
+
+/* 사진 칸 */
+.photo {
+  position: relative; display: grid; place-items: center; overflow: hidden;
+  width: 100%; max-width: 100%; aspect-ratio: 4 / 3; border-radius: 14px; cursor: pointer;
+  background: var(--mint-soft); border: 2px dashed var(--line); color: var(--muted);
+  font-size: 14px; text-align: center; padding: 0; margin: 0;
+}
+.photo.wide { aspect-ratio: 16 / 9; }
+.photo:hover, .photo.drag { border-color: var(--mint); color: var(--mint-deep); }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo.has-img { border-style: solid; border-color: transparent; }
+.photo .ph { display: grid; gap: 4px; padding: 12px; pointer-events: none; }
+.photo .ph b { font-size: 28px; line-height: 1; font-weight: 400; }
+.photo.has-img .ph { display: none; }
+.photo .del {
+  position: absolute; top: 8px; right: 8px; z-index: 2; display: none;
+  font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 0;
+  background: rgba(0,0,0,.6); color: #fff; cursor: pointer;
+}
+.photo.has-img:hover .del, .photo.has-img:focus-within .del { display: block; }
+.hero .photo { background: color-mix(in srgb, var(--surface) 22%, transparent); border-color: color-mix(in srgb, var(--surface) 60%, transparent); color: var(--on-mint); }
+
+/* 홈페이지 본문 */
+header.site .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; flex-wrap: wrap; }
+.logo { font-family: var(--font-display); font-size: 22px; color: var(--mint-deep); font-weight: 700; }
+nav.menu { display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; }
+nav.menu a { color: var(--fg); text-decoration: none; }
+nav.menu a:hover { color: var(--mint-deep); }
+
+.hero { background: var(--mint); color: var(--on-mint); }
+.hero .wrap { padding-block: 48px 56px; display: grid; gap: 32px; grid-template-columns: 1.1fr 1fr; align-items: center; }
+.hero .text { display: grid; gap: 16px; min-width: 0; }
+.hero h1 { font-family: var(--font-display); font-size: clamp(30px, 5.5vw, 46px); line-height: 1.25; margin: 0; text-wrap: balance; }
+.hero p { margin: 0; font-size: 18px; max-width: 32em; opacity: .95; }
+.hero .cta {
+  justify-self: start; margin-top: 8px; background: var(--surface); color: var(--mint-deep);
+  padding: 10px 20px; border-radius: 999px; font-weight: 700; text-decoration: none;
+}
+
+section.block .wrap { padding-block: 56px; display: grid; gap: 20px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; color: var(--mint-deep); font-weight: 700; margin: 0; }
+h2 { font-family: var(--font-display); font-size: 30px; margin: 0; line-height: 1.3; text-wrap: balance; }
+.about .row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+.about .text { display: grid; gap: 16px; min-width: 0; }
+.about p { margin: 0; max-width: 40em; color: var(--muted); }
+
+.services { background: var(--mint-soft); }
+.services .photo { background: var(--bg); border-radius: 10px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 22px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card h3 { margin: 6px 0 0; font-size: 19px; color: var(--mint-deep); }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.contact dl { display: grid; grid-template-columns: max-content 1fr; gap: 10px 24px; margin: 0; }
+.contact dt { font-weight: 700; color: var(--mint-deep); }
+.contact dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+footer.site { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer.site .wrap { padding-block: 24px; }
+
+/* 코드 보기 창 */
+.code-panel { border-top: 1px solid var(--line); background: var(--surface); }
+.code-panel .wrap { padding-block: 16px; display: grid; gap: 8px; }
+.code-panel textarea { width: 100%; height: 220px; font: 12px/1.5 ui-monospace, Menlo, monospace; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+
+@media (max-width: 720px) {
+  .hero .wrap, .about .row { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .contact dl { grid-template-columns: 1fr; gap: 2px; }
+  .contact dd { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .swatch, nav.menu a, .photo { transition: background-color .15s, color .15s, border-color .15s; }
+}
+</style>
+
+<div class="toolbar" role="region" aria-label="편집 도구">
+  <div class="wrap">
+    <span class="label">색상</span>
+    <div class="swatches" aria-label="민트 색상 선택">
+      <button class="swatch" type="button" data-color="#3EB489" title="기본 민트" style="background:#3EB489"></button>
+      <button class="swatch" type="button" data-color="#7FD8BE" title="연한 민트" style="background:#7FD8BE"></button>
+      <button class="swatch" type="button" data-color="#2BAE9A" title="청록 민트" style="background:#2BAE9A"></button>
+      <button class="swatch" type="button" data-color="#98E2C6" title="파스텔 민트" style="background:#98E2C6"></button>
+      <input type="color" id="custom-color" value="#3EB489" aria-label="직접 색상 고르기" title="직접 색상 고르기">
+    </div>
+    <span class="spacer status" id="status" role="status">바뀐 내용은 자동으로 저장돼요</span>
+    <button class="btn" id="reset" type="button">처음으로</button>
+    <button class="btn" id="show-code" type="button">코드 보기</button>
+  </div>
+</div>
+<div class="hint">
+  <div class="wrap"><b>글자를 더블클릭</b>하면 바로 고칠 수 있어요. 다 고쳤으면 바깥을 클릭하세요. <b>사진 칸을 클릭</b>하거나 사진 파일을 끌어다 놓으면 사진이 들어가요.</div>
+</div>
+
+<main id="site">
+  <header class="site">
+    <div class="wrap">
+      <div class="logo" data-edit>민트 스튜디오</div>
+      <nav class="menu" aria-label="메뉴">
+        <a href="#about" data-edit>소개</a>
+        <a href="#services" data-edit>서비스</a>
+        <a href="#contact" data-edit>연락처</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="text">
+        <h1 data-edit>상쾌한 시작을 함께 만듭니다</h1>
+        <p data-edit>여기에 홈페이지를 한 줄로 소개하는 문장을 적어 주세요. 예: 동네에서 가장 친절한 디자인 공방입니다.</p>
+        <a class="cta" href="#contact" data-edit>문의하기</a>
+      </div>
+      <div class="photo" data-photo="hero" tabindex="0" role="button" aria-label="대표 사진 넣기">
+        <span class="ph"><b>＋</b>대표 사진 넣기</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block about" id="about">
+    <div class="wrap">
+      <div class="row">
+        <div class="photo" data-photo="about" tabindex="0" role="button" aria-label="소개 사진 넣기">
+          <span class="ph"><b>＋</b>소개 사진 넣기</span>
+        </div>
+        <div class="text">
+          <p class="eyebrow" data-edit>ABOUT</p>
+          <h2 data-edit>우리를 소개합니다</h2>
+          <p data-edit>회사나 가게, 또는 나 자신에 대한 이야기를 적는 곳입니다. 언제 시작했는지, 무엇을 잘하는지, 방문하는 분들께 어떤 점을 약속하는지 두세 문장으로 써 보세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block services" id="services">
+    <div class="wrap">
+      <p class="eyebrow" data-edit>SERVICES</p>
+      <h2 data-edit>이런 일을 합니다</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="photo wide" data-photo="card1" tabindex="0" role="button" aria-label="첫 번째 서비스 사진 넣기"><span class="ph"><b>＋</b>사진 넣기</span></div>
+          <h3 data-edit>첫 번째 서비스</h3>
+          <p data-edit>서비스 설명을 짧게 적어 주세요.</p>
+        </article>
+        <article class="card">
+          <div class="photo wide" data-photo="card2" tabindex="0" role="button" aria-label="두 번째 서비스 사진 넣기"><span class="ph"><b>＋</b>사진 넣기</span></div>
+          <h3 data-edit>두 번째 서비스</h3>
+          <p data-edit>가격이나 진행 기간을 함께 적으면 좋습니다.</p>
+        </article>
+        <article class="card">
+          <div class="photo wide" data-photo="card3" tabindex="0" role="button" aria-label="세 번째 서비스 사진 넣기"><span class="ph"><b>＋</b>사진 넣기</span></div>
+          <h3 data-edit>세 번째 서비스</h3>
+          <p data-edit>방문객이 가장 궁금해할 내용을 적어 보세요.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block contact" id="contact">
+    <div class="wrap">
+      <p class="eyebrow" data-edit>CONTACT</p>
+      <h2 data-edit>연락처</h2>
+      <dl>
+        <dt data-edit>전화</dt><dd data-edit>010-0000-0000</dd>
+        <dt data-edit>이메일</dt><dd data-edit>hello@example.com</dd>
+        <dt data-edit>주소</dt><dd data-edit>서울특별시 OO구 OO로 00</dd>
+        <dt data-edit>영업시간</dt><dd data-edit>평일 10:00 – 18:00</dd>
+      </dl>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="wrap" data-edit>© 2026 민트 스튜디오</div>
+  </footer>
+</main>
+
+<input type="file" id="file-in" accept="image/*" hidden>
+
+<div class="code-panel" id="code-panel" hidden>
+  <div class="wrap">
+    <strong>현재 홈페이지 코드</strong>
+    <span class="status">아래 코드를 복사해서 .html 파일로 저장하면 어디서든 열 수 있어요.</span>
+    <textarea id="code-out" readonly aria-label="홈페이지 HTML 코드"></textarea>
+    <div><button class="btn primary" id="copy-code" type="button">코드 복사</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var KEY = "mint-homepage-v2";
+  var DEFAULT = "#3EB489";
+  var site = document.getElementById("site");
+  var root = document.documentElement;
+  var statusEl = document.getElementById("status");
+  var custom = document.getElementById("custom-color");
+  var fileIn = document.getElementById("file-in");
+  var original = site.innerHTML;
+  var photoTarget = null;
+
+  var statusTimer;
+  function setStatus(t) {
+    statusEl.textContent = t;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(function () { statusEl.textContent = "바뀐 내용은 자동으로 저장돼요"; }, 2500);
+  }
+
+  /* ---------- 색상 ---------- */
+  function shade(hex, amt) {
+    var n = parseInt(hex.slice(1), 16);
+    var f = function (c) { return Math.max(0, Math.min(255, Math.round(c * (1 + amt)))); };
+    return "#" + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (c) { return f(c).toString(16).padStart(2, "0"); }).join("");
+  }
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  }
+  function applyColor(hex) {
+    root.style.setProperty("--mint", hex);
+    root.style.setProperty("--mint-deep", shade(hex, -0.35));
+    root.style.setProperty("--on-mint", lum(hex) > 0.68 ? "#123A2E" : "#FFFFFF");
+    custom.value = hex;
+    document.querySelectorAll(".swatch").forEach(function (s) {
+      s.setAttribute("aria-pressed", String(s.dataset.color.toLowerCase() === hex.toLowerCase()));
+    });
+  }
+  document.querySelectorAll(".swatch").forEach(function (s) {
+    s.addEventListener("click", function () { applyColor(s.dataset.color); save(); });
+  });
+  custom.addEventListener("input", function () { applyColor(custom.value); });
+  custom.addEventListener("change", save);
+
+  /* ---------- 글자: 더블클릭으로 바로 고치기 ---------- */
+  function startEdit(el) {
+    if (el.isContentEditable) return;
+    el.setAttribute("contenteditable", "true");
+    el.focus();
+    // 더블클릭한 위치가 아니라 전체가 선택되면 고치기 쉬움
+    var r = document.createRange(); r.selectNodeContents(el);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+  function endEdit(el) {
+    el.removeAttribute("contenteditable");
+    if (!el.textContent.trim()) el.textContent = "글자를 입력하세요";
+    save();
+  }
+  site.addEventListener("dblclick", function (e) {
+    var el = e.target.closest("[data-edit]");
+    if (el) { e.preventDefault(); startEdit(el); }
+  });
+  site.addEventListener("focusout", function (e) {
+    if (e.target.matches && e.target.matches("[data-edit][contenteditable]")) endEdit(e.target);
+  });
+  site.addEventListener("keydown", function (e) {
+    var el = e.target;
+    if (!el.matches || !el.matches("[data-edit][contenteditable]")) return;
+    if (e.key === "Escape" || (e.key === "Enter" && !e.shiftKey && el.tagName !== "P")) { e.preventDefault(); el.blur(); }
+  });
+  // 고치는 중인 링크는 눌러도 이동하지 않게
+  site.addEventListener("click", function (e) {
+    var a = e.target.closest("a");
+    if (a && a.isContentEditable) e.preventDefault();
+  });
+  // 붙여넣기는 글자만
+  site.addEventListener("paste", function (e) {
+    if (!e.target.closest || !e.target.closest("[contenteditable]")) return;
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
+  });
+
+  /* ---------- 사진 ---------- */
+  function resizeImage(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var max = 1400, w = img.width, h = img.height, s = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement("canvas");
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        cb(c.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = function () { setStatus("이 파일은 사진으로 열 수 없어요"); };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function setPhoto(box, src) {
+    var img = box.querySelector("img");
+    var del = box.querySelector(".del");
+    if (!src) {
+      if (img) img.remove();
+      if (del) del.remove();
+      box.classList.remove("has-img");
+      return;
+    }
+    if (!img) { img = document.createElement("img"); img.alt = ""; box.prepend(img); }
+    img.src = src;
+    if (!del) {
+      del = document.createElement("button");
+      del.type = "button"; del.className = "del"; del.textContent = "사진 빼기";
+      box.appendChild(del);
+    }
+    box.classList.add("has-img");
+  }
+  function placeFile(box, file) {
+    if (!file || !/^image\//.test(file.type)) { setStatus("사진 파일만 넣을 수 있어요"); return; }
+    setStatus("사진을 넣는 중…");
+    resizeImage(file, function (data) { setPhoto(box, data); save(); setStatus("사진을 넣었어요"); });
+  }
+  site.addEventListener("click", function (e) {
+    var del = e.target.closest(".del");
+    if (del) { e.stopPropagation(); setPhoto(del.closest(".photo"), null); save(); setStatus("사진을 뺐어요"); return; }
+    var box = e.target.closest(".photo");
+    if (box) { photoTarget = box; fileIn.value = ""; fileIn.click(); }
+  });
+  site.addEventListener("keydown", function (e) {
+    var box = e.target.closest && e.target.closest(".photo");
+    if (box && e.target === box && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); photoTarget = box; fileIn.value = ""; fileIn.click(); }
+  });
+  fileIn.addEventListener("change", function () {
+    if (photoTarget && fileIn.files[0]) placeFile(photoTarget, fileIn.files[0]);
+  });
+  site.addEventListener("dragover", function (e) {
+    var box = e.target.closest(".photo");
+    if (box) { e.preventDefault(); box.classList.add("drag"); }
+  });
+  site.addEventListener("dragleave", function (e) {
+    var box = e.target.closest(".photo");
+    if (box) box.classList.remove("drag");
+  });
+  site.addEventListener("drop", function (e) {
+    var box = e.target.closest(".photo");
+    if (!box) return;
+    e.preventDefault(); box.classList.remove("drag");
+    placeFile(box, e.dataTransfer.files[0]);
+  });
+
+  /* ---------- 자동 저장 ---------- */
+  function cleanHtml() {
+    var clone = site.cloneNode(true);
+    clone.querySelectorAll("[contenteditable]").forEach(function (el) { el.removeAttribute("contenteditable"); });
+    clone.querySelectorAll(".drag").forEach(function (el) { el.classList.remove("drag"); });
+    return clone.innerHTML;
+  }
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ html: cleanHtml(), color: custom.value }));
+      setStatus("저장했어요");
+    } catch (e) {
+      setStatus("저장 공간이 부족해요. 사진 크기를 줄여 보세요");
+    }
+  }
+
+  var resetArmed = false;
+  var resetBtn = document.getElementById("reset");
+  resetBtn.addEventListener("click", function () {
+    if (!resetArmed) {
+      resetArmed = true; resetBtn.textContent = "정말 처음으로?";
+      setTimeout(function () { resetArmed = false; resetBtn.textContent = "처음으로"; }, 3000);
+      return;
+    }
+    resetArmed = false; resetBtn.textContent = "처음으로";
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    site.innerHTML = original; applyColor(DEFAULT);
+    setStatus("처음 상태로 돌렸어요");
+  });
+
+  /* ---------- 코드 보기 ---------- */
+  function buildExport() {
+    var css = document.querySelector("style").textContent;
+    var vars = ":root{--mint:" + root.style.getPropertyValue("--mint") + ";--mint-deep:" + root.style.getPropertyValue("--mint-deep") + ";--on-mint:" + root.style.getPropertyValue("--on-mint") + "}";
+    var clone = document.createElement("div");
+    clone.innerHTML = cleanHtml();
+    clone.querySelectorAll(".photo:not(.has-img)").forEach(function (el) { el.remove(); });
+    clone.querySelectorAll(".del").forEach(function (el) { el.remove(); });
+    clone.querySelectorAll(".photo").forEach(function (el) { el.removeAttribute("role"); el.removeAttribute("tabindex"); el.removeAttribute("aria-label"); el.style.cursor = "default"; });
+    var title = clone.querySelector(".logo") ? clone.querySelector(".logo").textContent.trim() : "홈페이지";
+    return "<!doctype html>\n<html lang=\"ko\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>" + title +
+      "</title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap\">\n<style>" +
+      css + "\n" + vars + "\nbody{margin:0}[data-edit]:hover{outline:none}[data-edit]{cursor:auto}</style>\n</head>\n<body>\n<main id=\"site\">" + clone.innerHTML + "</main>\n</body>\n</html>\n";
+  }
+  var panel = document.getElementById("code-panel");
+  var out = document.getElementById("code-out");
+  document.getElementById("show-code").addEventListener("click", function () {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) { out.value = buildExport(); panel.scrollIntoView({ block: "start" }); }
+  });
+  document.getElementById("copy-code").addEventListener("click", function () {
+    out.value = buildExport();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(out.value).then(function () { setStatus("코드를 복사했어요"); },
+        function () { out.select(); setStatus("Ctrl+C로 복사하세요"); });
+    } else { out.select(); setStatus("Ctrl+C로 복사하세요"); }
+  });
+
+  /* ---------- 저장된 내용 불러오기 ---------- */
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+  if (saved && saved.html) site.innerHTML = saved.html;
+  applyColor(saved && saved.color ? saved.color : DEFAULT);
+})();
+</script>
